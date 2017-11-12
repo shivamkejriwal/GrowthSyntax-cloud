@@ -1,0 +1,22 @@
+{
+  "name": "GrowthSyntax-cloud",
+  "version": "1.0.0",
+  "description": "Cloud functions and operations for GrowthGyntax on firebase.",
+  "repository": "https://github.com/shivamkejriwal/GrowthSyntax-cloud.git",
+  "private": true,
+  "scripts": {},
+  "author": "Shivam Kejriwal",
+  "contributors": [
+    {
+      "name": "Shivam Kejriwal",
+      "email": "shivamkejriwal@gmail.com"
+    }
+  ],
+  "dependencies": {
+    "firebase": "^4.6.0"
+  },
+  "devDependencies": {
+    "@angular/cli": "^1.5.0"
+  },
+  "engines": {}
+}
