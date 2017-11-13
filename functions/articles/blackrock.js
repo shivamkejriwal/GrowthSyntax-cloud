@@ -93,9 +93,10 @@ const execute = (complete) => {
 
 exports.load = functions.https.onRequest((request, response) => {
     execute((articles) => {
+        const count = articles.length;
         crud.createBatch(articles)
         .then(res => {
-            response.send(`Completed ${articles.length} article loads`);
+            response.send(`Completed ${count} article loads`);
         }).catch(err => {
             response.send(`Error on articles for ${author}`);
         });
