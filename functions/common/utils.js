@@ -26,14 +26,16 @@ const getLastMarketDay = () => {
         const day = date.format('dddd');
         return _.contains(weekends, day);
     }
-    const isMarketOpen = (date) => {
+    const isMarketClosed = (date) => {
         const hour = date.hour();
-        return Boolean(hour <= 14);
+        return Boolean(hour > 14);
     }
-    
+    const isValidMarketDay = (day) => !isWeekend(day) && isMarketClosed(day);
     let day = moment();
-    while (isWeekend(day) || isMarketOpen(day)) {
-        day = day.subtract(1, 'days');
+    for( var i = 0; i < 3;i++){
+        if (!isValidMarketDay(day)){
+            day = day.subtract(1, 'days');
+        }
     }
     const today = moment().format('YYYY-MM-DD');
     const lastMarketDay = day.format('YYYY-MM-DD');
