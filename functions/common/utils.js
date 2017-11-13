@@ -1,4 +1,5 @@
 const request = require('request');
+const _ = require('underscore');
 const querystring = require('querystring');
 const moment = require('moment');
 const config = require('./config.js');
@@ -20,19 +21,24 @@ const getData = (url, params, cb) => {
 }
 
 const getLastMarketDay = () => {
-    const day = moment().format('dddd');
-    const hour = moment().hour();
-    let diff = 0
-    if (day === 'Sunday') {
-        diff = 2;
+    const isWeekend = (date) => {
+        const weekends = ['Sunday', 'Saturday'];
+        const day = date.format('dddd');
+        return _.contains(weekends, day);
     }
-    else if (day === 'Saturday') {
-        diff = 1;
+    const isMarketOpen = (date) => {
+        const hour = date.hour();
+        return Boolean(hour <= 14);
     }
-    else if (hour <= 14) {
-        diff = 1;
+    
+    let day = moment();
+    while (isWeekend(day) || isMarketOpen(day)) {
+        day = day.subtract(1, 'days');
     }
-    return moment().subtract(diff, 'days').format('YYYY-MM-DD');
+    const today = moment().format('YYYY-MM-DD');
+    const lastMarketDay = day.format('YYYY-MM-DD');
+    console.log('getLastMarketDay', {today, lastMarketDay});
+    return lastMarketDay;
 }
 
 
