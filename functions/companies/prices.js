@@ -59,7 +59,7 @@ const getData = () => {
 }
 
 exports.load = functions.https.onRequest((request, response) => {
-    getData.then(results => {
+    getData().then(results => {
         const count = results.length;
         console.log(`Result Count: ${count}`);
         crud.createBatch(results)
