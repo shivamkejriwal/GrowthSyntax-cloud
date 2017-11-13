@@ -15,15 +15,13 @@ const objToParams = (obj) => querystring.stringify(obj);
 
 
 const getData = (url, params, cb) => {
-    let query = objToParams(params);
-    // console.log(`getData: ${url}?${query}`);
+    const query = objToParams(params);
     request(`${url}?${query}`, { json: true }, cb);
 }
 
 const getLastMarketDay = () => {
     const day = moment().format('dddd');
     const hour = moment().hour();
-
     let diff = 0
     if (day === 'Sunday') {
         diff = 2;

@@ -15,15 +15,20 @@ const params = {
 };
 
 
-const errorHandler = (err, data) => console.log('errorHandler', {err, data});
+const errorHandler = (err, reject) => {
+    console.log('errorHandler', err);
+    reject(err);
+};
 
-const successHandler = (result, done) => {
+const successHandler = (result, resolve, reject) => {
     console.log('successHandler');
-    if (!result) return errorHandler('No Results.', result);
-    if (!result.datatable) return errorHandler('No Datatable.', result);
+    if (!result) errorHandler('No Results.', reject);
+    if (!result.datatable) errorHandler('No Datatable.', reject);
 
     const dataList = result.datatable.data || [];
     const columnsList = result.datatable.columns || [];
+    if (!dataList.length) errorHandler('No Data.', reject);
+
     console.log(`datafound: ${dataList.length}`);
 
     const resultsMap = {};
@@ -38,7 +43,7 @@ const successHandler = (result, done) => {
     });
     analysis.doAnalysis(resultsMap, 10);
     const results = _.values(resultsMap);
-    done(results);
+    resolve(results);
 }
 
 const getData = () => {
@@ -48,14 +53,15 @@ const getData = () => {
             if (err) {
                 reject(err);
             }
-            successHandler(body, resolve);
+            successHandler(body, resolve, reject);
         });
     })
 }
 
 exports.load = functions.https.onRequest((request, response) => {
-    getData(results => {
+    getData.then(results => {
         const count = results.length;
+        console.log(`Result Count: ${count}`);
         crud.createBatch(results)
         .then(res => {
             response.send(`Completed ${count} Prices loads`);
