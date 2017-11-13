@@ -42,6 +42,7 @@ const successHandler = (result, done) => {
 }
 
 const getData = () => {
+    console.log(`Getting prices for ${params.date}`);
     return new Promise(( resolve, reject) => {
         util.getData(sharadarUrl, params, (err, res, body) => {
             if (err) {

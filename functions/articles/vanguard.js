@@ -80,7 +80,6 @@ const execute = (complete) => {
     
         const articles = [];
         const done = (article) => {
-            console.log(article);
             articles.push(article);
             if (articles.length >= items.length){
                 complete(articles);

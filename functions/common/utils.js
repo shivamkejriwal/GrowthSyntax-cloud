@@ -41,11 +41,13 @@ const getLastMarketDay = () => {
 const getFirebaseDB = () => {
     const admin = require('firebase-admin');
     const serviceAccount = config.firebase.api_key;
-    
-    admin.initializeApp({
+    const options = {
         credential: admin.credential.cert(serviceAccount),
         databaseURL: "https://growthsyntax.firebaseio.com"
-    });
+    };
+    if (!admin.apps.length) {
+        admin.initializeApp(options);
+    }
     return admin.firestore();
 }
 
