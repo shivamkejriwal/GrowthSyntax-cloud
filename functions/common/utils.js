@@ -1,5 +1,6 @@
 const request = require('request');
 const querystring = require('querystring');
+const moment = require('moment');
 const config = require('./config.js');
 
 
@@ -19,6 +20,23 @@ const getData = (url, params, cb) => {
     request(`${url}?${query}`, { json: true }, cb);
 }
 
+const getLastMarketDay = () => {
+    const day = moment().format('dddd');
+    const hour = moment().hour();
+
+    let diff = 0
+    if (day === 'Sunday') {
+        diff = 2;
+    }
+    else if (day === 'Saturday') {
+        diff = 1;
+    }
+    else if (hour <= 14) {
+        diff = 1;
+    }
+    return moment().subtract(diff, 'days').format('YYYY-MM-DD');
+}
+
 
 const getFirebaseDB = () => {
     const admin = require('firebase-admin');
@@ -34,5 +52,6 @@ const getFirebaseDB = () => {
 module.exports = {
     round,
     getData,
+    getLastMarketDay,
     getFirebaseDB
 };
