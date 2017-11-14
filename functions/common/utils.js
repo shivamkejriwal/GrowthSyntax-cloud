@@ -43,6 +43,8 @@ const getLastMarketDay = () => {
     return lastMarketDay;
 }
 
+const getToday = () => moment().format('YYYY-MM-DD');
+
 
 const getFirebaseDB = () => {
     const admin = require('firebase-admin');
@@ -60,6 +62,7 @@ const getFirebaseDB = () => {
 module.exports = {
     round,
     getData,
+    getToday,
     getLastMarketDay,
     getFirebaseDB
 };

@@ -10,7 +10,7 @@ const sharadarUrl = 'https://www.quandl.com/api/v3/datatables/SHARADAR/SEP.json'
 const indicators = ['ticker', 'date', 'open', 'close', 'volume'];
 const params = {
     'api_key': config.quandl.api_key,
-    'date': util.getLastMarketDay(),
+    'date': util.getToday(),
     'qopts.columns': indicators.toString()
 };
 
