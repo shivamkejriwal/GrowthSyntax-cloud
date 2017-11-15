@@ -21,6 +21,7 @@ let updateStock = (ticker, data) => {
 }
 
 let createStock = (ticker, data) => {
+    console.log(`createStock: ${ticker}`);
     const document = getDocument(ticker);
     fixData(data);
     return document.set(data);
@@ -58,8 +59,20 @@ const sendBatch = (dataList) => {
         batch.update(doc, data);
         // batch.set(doc, data);
     });
-    return batch.commit().then(() => {
+    return batch.commit()
+    .then(() => {
         console.log('Batch Complete');
+    }).catch(() => {
+        console.log(`Attempting a smaller batch: ${dataList.length}`);
+        if (dataList.length > 1) {
+            return createBatch(dataList);
+        }
+        else {
+            console.log('Attempting last stock');
+            const data = dataList[0] || {};
+            return createStock(data.ticker, data);
+        }
+        
     });
 }
 
@@ -73,8 +86,10 @@ let createBatch = (dataList) => {
     return new Promise((resolve, reject) => {
         let count = 0;
         let requestChain = [];
+        const spliceSize = dataList.length > 500 
+            ? 500 : Math.round( dataList.length * .10);
         while(dataList.length) {
-            const batch = dataList.splice(0,500);
+            const batch = dataList.splice(0, spliceSize);
             requestChain.push(sendBatch(batch));
         }
         console.log(`Created requestChain:${requestChain.length}`);

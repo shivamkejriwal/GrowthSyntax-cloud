@@ -58,17 +58,22 @@ const getData = () => {
     })
 }
 
-exports.load = functions.https.onRequest((request, response) => {
-    getData()
-    .then(results => {
+const execute = (cb) => {
+    getData().then(results => {
         const count = results.length;
-        console.log(`Result Count: ${count}`);
+        cb(`Result Count: ${count}`);
         crud.createBatch(results)
         .then(res => {
-            response.send(`Completed ${count} Prices loads`);
+            cb(`Completed ${count} Prices loads`);
         }).catch(err => {
-            response.send(`Error on prices`);
+            cb(`Error on prices`);
         });
     })
-    .catch(err => response.send(`Error on data`));
+    .catch(err => cb(`Error on data`));
+}
+
+// execute(str => console.log(str));
+
+exports.load = functions.https.onRequest((request, response) => {
+    execute(str => response.send(str));
 });
