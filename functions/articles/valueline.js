@@ -31,6 +31,10 @@ const getCategory = (category) => {
     return maps[category] ? maps[category] : category;
 }
 
+const getImageUrl = (item) => {
+    return '';
+}
+
 const htmlToString = (html) => {
     const $ = cheerio.load(html);
     const text = $.text();
@@ -54,6 +58,7 @@ const loadRssData = (item, done) => {
     const article = {
         title : item.title,
         url: item.link,
+        imageUrl: getImageUrl(item),
         category: getCategory(item.category),
         date: moment(item.pubDate).format('YYYY-MM-DD-HH'),
         author: author
@@ -88,7 +93,7 @@ const execute = (complete) => {
                 complete(articles);
             } 
         }
-    
+
         _.each(items, (item) => loadRssData(item, done));    
     });
 }

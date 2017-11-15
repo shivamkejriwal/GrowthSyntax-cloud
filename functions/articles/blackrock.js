@@ -28,6 +28,12 @@ const getCategory = (categories) => {
     return 'Market and Economy';
 }
 
+const getImageUrl = (item) => {
+    const enclosure = item.enclosure || {};
+    const imageUrl = enclosure.url;
+    return imageUrl || '';
+}
+
 const htmlToString = (html) => {
     const $ = cheerio.load(html);
     const text = $.text();
@@ -51,6 +57,7 @@ const loadRssData = (item, done) => {
     const article = {
         title : item.title,
         url: item.link,
+        imageUrl: getImageUrl(item),
         category: getCategory(item.category),
         date: moment(item.pubDate).format('YYYY-MM-DD-HH'),
         author: author
