@@ -44,7 +44,13 @@ const getLastMarketDay = () => {
 }
 
 const getToday = () => moment().format('YYYY-MM-DD');
-
+const getDayBefore = (day) => day.subtract(1, 'days').format('YYYY-MM-DD');
+const getDay = () => {
+    const today = moment();
+    return today.hour() > 14
+    ? getToday()
+    : getDayBefore(today);
+}
 
 const getFirebaseDB = () => {
     const admin = require('firebase-admin');
@@ -64,5 +70,7 @@ module.exports = {
     getData,
     getToday,
     getLastMarketDay,
+    getDayBefore,
+    getDay,
     getFirebaseDB
 };
