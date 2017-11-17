@@ -14,7 +14,6 @@ const paramsToObj = (str) => querystring.parse(str);
 
 const objToParams = (obj) => querystring.stringify(obj);
 
-
 const getData = (url, params, cb) => {
     const query = objToParams(params);
     request(`${url}?${query}`, { json: true }, cb);
@@ -65,6 +64,10 @@ const getFirebaseDB = () => {
     return admin.firestore();
 }
 
+const replaceAll = function(target, search, replacement) {
+    return target.replace(new RegExp(search, 'g'), replacement);
+};
+
 module.exports = {
     round,
     getData,
@@ -72,5 +75,6 @@ module.exports = {
     getLastMarketDay,
     getDayBefore,
     getDay,
-    getFirebaseDB
+    getFirebaseDB,
+    replaceAll
 };
