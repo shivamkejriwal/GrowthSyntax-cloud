@@ -15,3 +15,4 @@ exports.blackrock = articles.blackrock.load;
 exports.vanguard = articles.vanguard.load;
 exports.prices = companies.prices.load;
 exports.sectors = sectors.groupings.load;
+exports.marketMovers = sectors.marketMovers.load;
