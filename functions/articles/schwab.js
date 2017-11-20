@@ -197,13 +197,28 @@ const execute = () => {
     .catch(err => console.log(err));
 }
 
-execute()
-.then(articles => {
-    const count = articles.length;
-    return crud.createBatch(articles)
-    .then(res => {
-        console.log(`Completed ${count} article loads`);
-    }).catch(err => {
-        console.log(`Error on articles for ${author}`);
+const test = () => {
+    execute()
+    .then(articles => {
+        const count = articles.length;
+        return crud.createBatch(articles)
+        .then(res => {
+            console.log(`Completed ${count} article loads`);
+        }).catch(err => {
+            console.log(`Error on articles for ${author}`);
+        });
+    });
+}
+
+
+exports.load = functions.https.onRequest((request, response) => {
+    execute().then((articles) => {
+        const count = articles.length;
+        crud.createBatch(articles)
+        .then(res => {
+            response.send(`Completed ${count} article loads`);
+        }).catch(err => {
+            response.send(`Error on articles for ${author}`);
+        });
     });
 });
