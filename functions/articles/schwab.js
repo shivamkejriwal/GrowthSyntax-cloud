@@ -56,7 +56,21 @@ const isValidCategory = (categoryStr) => {
         'Portfolio Management',
         'Asset Allocation',
     ];
-    const categoryList = categoryStr.split(',');
+
+    const acceptList = [
+        'Market Commentary',
+        'Stock Market Today',
+        'Government Policy',
+        'Economy',
+        'Markets'
+    ];
+    if (!categoryStr || typeof categoryStr !== 'string') {
+        return false;
+    }
+    const categoryList = _.map(categoryStr.split(','), val => val.trim());
+    const isValid = _.some(categoryList, category => _.contains(acceptList, category));
+    const isVetoed = _.some(categoryList, category => _.contains(vetoList, category));
+    return isValid && !isVetoed;
 }
 
 const getImageUrl = (item) => {
@@ -102,11 +116,13 @@ const loadRssData = (item, done) => {
         options.url = getUrl(dailyUpdateUrl);
         article.category = 'Stock Market Today';
     }
-
-    // console.log({
-    //     title: article.title,
-    //     category: article.category,
-    // });
+    article.isValidCategory = isValidCategory(article.category);
+    // if (!article.isValidCategory) {
+    //     console.log({
+    //         title: article.title,
+    //         category: article.category,
+    //     });
+    // }
 
     request(options, (err, res, body) => {
         if (!err) {
@@ -130,8 +146,19 @@ const getData = (url) => {
                 let total = items.length;
                 const articles = [];
                 const done = (article) => {
-                    articles.push(article);
-                    if (articles.length >= total){
+                    if (article.isValidCategory) {
+                        delete article.isValidCategory;
+                        articles.push(article);
+                    }
+                    else {
+                        skipped++;
+                    }
+                    
+                    const count = articles.length + skipped;
+                    // console.log({
+                    //     count, skipped
+                    // });
+                    if (count >= total){
                         resolve(articles);
                     } 
                 }
