@@ -48,28 +48,16 @@ const extractHtml = (html) => {
 }
 
 const loadRssData = (item, done) => {
+    const content = extractHtml(item.encoded && item.encoded['$t']);
     const article = {
         title : item.title,
         url: item.link,
+        content,
         category: getCategory(item.category),
         date: moment(item.pubDate).format('YYYY-MM-DD-HH'),
         author: author
     };
-    const options = {
-        headers,
-        url: getUrl(item.link),
-        method: 'GET'
-    };
-    console.log(options)
-
-    request(options, (err, res, body) => {
-        if (!err) {
-            const data = JSON.parse(body);
-            console.log(data);
-            article.content = extractHtml(data.content);
-            done(article);
-        }
-    });
+    done(article);
 }
 
 
@@ -87,23 +75,34 @@ const execute = (complete) => {
                 complete(articles);
             } 
         }
-
-        loadRssData(items[0], done);
-        // _.each(items, (item) => loadRssData(item, done));    
+        _.each(items, (item) => loadRssData(item, done));    
     });
 }
 
-// exports.load = functions.https.onRequest((request, response) => {
-//     execute((articles) => {
-//         crud.createBatch(articles)
-//         .then(res => {
-//             response.send(`Completed ${articles.length} article loads`);
-//         }).catch(err => {
-//             response.send(`Error on articles for ${author}`);
-//         });
-//     });
-// });
+const test = () => {
+    let count = 0;
+    execute((articles) => {
+        count = articles.length;
+        crud.createBatch(articles)
+        .then(res => {
+            console.log(`Completed ${count} article loads`);
+        }).catch(err => {
+            console.log(`Error on articles for ${author}`);
+        });
+    });
+}
 
-// execute(articles => {
-//     // console.log(articles);
-// })
+exports.load = functions.https.onRequest((request, response) => {
+    let count = 0;
+    execute((articles) => {
+        count = articles.length;
+        crud.createBatch(articles)
+        .then(res => {
+            response.send(`Completed ${count} article loads`);
+        }).catch(err => {
+            response.send(`Error on articles for ${author}`);
+        });
+    });
+});
+
+// test();

@@ -13,6 +13,7 @@ exports.helloWorld = functions.https.onRequest((request, response) => {
 exports.valueline = articles.valueline.load;
 exports.blackrock = articles.blackrock.load;
 exports.vanguard = articles.vanguard.load;
+exports.pimco = articles.pimco.load;
 exports.schwab = articles.schwab.load;
 exports.prices = companies.prices.load;
 exports.sectors = sectors.groupings.load;
