@@ -58,22 +58,28 @@ const getData = () => {
     })
 }
 
-const execute = (cb) => {
+const test = () => {
+    let count = 0;
     getData().then(results => {
-        const count = results.length;
-        cb(`Result Count: ${count}`);
-        crud.createBatch(results)
-        .then(res => {
-            cb(`Completed ${count} Prices loads`);
-        }).catch(err => {
-            cb(`Error on prices`);
-        });
-    })
-    .catch(err => cb(`Error on data`));
+        count = results.length;
+        return crud.createBatch(results);
+    }).then(result => {
+        console.log(`Updating ${count} company prices.`);
+    }).catch(err => {
+        console.log('Error on updating prices.');
+    });
 }
 
-// execute(str => console.log(str));
-
 exports.load = functions.https.onRequest((request, response) => {
-    execute(str => response.send(str));
+    let count = 0;
+    getData().then(results => {
+        count = results.length;
+        return crud.createBatch(results);
+    }).then(result => {
+        response.send(`Updating ${count} company prices.`);
+    }).catch(err => {
+        response.send('Error on updating prices.');
+    });
 });
+
+// test();

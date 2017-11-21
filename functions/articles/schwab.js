@@ -99,6 +99,10 @@ const extractHtml = (html) => {
 const loadRssData = (item, done) => {
     const schwabCategory = item['schwab:taxonomy'] && item['schwab:taxonomy']['schwab:category'];
     const category = item.category || schwabCategory;
+
+    // console.log({
+    //     title: item.title,category,
+    // });
     const article = {
         title : item.title,
         url: item.link,
@@ -222,3 +226,6 @@ exports.load = functions.https.onRequest((request, response) => {
         });
     });
 });
+
+
+// test();
