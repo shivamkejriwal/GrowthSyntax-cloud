@@ -27,25 +27,6 @@ const getUrl = (url) => {
     return `${mercuryUrl}${qs}`;
 }
 
-const getCategory = (categoryStr) => {
-    // const categoryList = categoryStr.split(',');
-    const maps = {
-        'Market Commentary': 'Market and Economy',
-        'Economy': 'Market and Economy',
-        'Markets': 'Market and Economy',
-        'Government Policy': 'Market and Economy',
-        'Planning': 'Personal Finance',
-        'Personal Finance': 'Personal Finance',
-        'Education Savings': 'Personal Finance',
-        '401k': 'Personal Finance',
-        'Retirement - Nearing or in': 'Personal Finance',
-        'Retirement': 'Personal Finance',
-        'Estate': 'Personal Finance',
-        'Wills': 'Personal Finance'
-    }
-    return maps[categoryStr] ? maps[categoryStr] : categoryStr;
-}
-
 const isValidCategory = (categoryStr) => {
     const vetoList = [
         'Planning',
@@ -73,6 +54,17 @@ const isValidCategory = (categoryStr) => {
     return isValid && !isVetoed;
 }
 
+const getCategory = (item, isMarketUpdate) => {
+    if (isMarketUpdate) {
+        return 'Stock Market Today';
+    }
+    const schwabCategory = item['schwab:taxonomy'] && item['schwab:taxonomy']['schwab:category'];
+    const categoryStr = item.category || schwabCategory;
+    return isValidCategory(categoryStr) ? 'Market and Economy' : false;
+}
+
+
+
 const getImageUrl = (item) => {
     return '';
 }
@@ -97,30 +89,22 @@ const extractHtml = (html) => {
 }
 
 const loadRssData = (item, done) => {
-    const schwabCategory = item['schwab:taxonomy'] && item['schwab:taxonomy']['schwab:category'];
-    const category = item.category || schwabCategory;
+    const isMarketUpdate = item.title.split(':')[0] === 'Schwab Market Update';
+    const options = {
+        headers,
+        url: isMarketUpdate ? getUrl(dailyUpdateUrl) : getUrl(item.link),
+        method: 'GET'
+    };
 
-    // console.log({
-    //     title: item.title,category,
-    // });
     const article = {
         title : item.title,
         url: item.link,
         imageUrl: getImageUrl(item),
-        category: getCategory(category),
+        category: getCategory(item, isMarketUpdate),
         date: moment(item.pubDate).format('YYYY-MM-DD-HH'),
         author: author
     };
-    const options = {
-        headers,
-        url: getUrl(item.link),
-        method: 'GET'
-    };
-    if (article.title.split(':')[0] === 'Schwab Market Update') {
-        options.url = getUrl(dailyUpdateUrl);
-        article.category = 'Stock Market Today';
-    }
-    article.isValidCategory = isValidCategory(article.category);
+    article.isValidCategory = !!article.category;
     // if (!article.isValidCategory) {
     //     console.log({
     //         title: article.title,
@@ -226,6 +210,5 @@ exports.load = functions.https.onRequest((request, response) => {
         });
     });
 });
-
 
 // test();
