@@ -78,14 +78,20 @@ const htmlToString = (html) => {
 }
 
 const extractHtml = (html) => {
-    const $ = cheerio.load(html);
-    const links = $('a');
-    $(links).each(function(i, link){
-        const href = $(link).attr('href');
-        const text = $(link).text();
-        $(link).removeAttr("href");
-    });
-    return $.html();
+    try {
+        const $ = cheerio.load(html);
+        const links = $('a');
+        $(links).each(function(i, link){
+            const href = $(link).attr('href');
+            const text = $(link).text();
+            $(link).removeAttr("href");
+        });
+        return $.html();
+    }
+    catch (e) {
+        console.log('could not extractHtml');
+        return '';
+    }
 }
 
 const loadRssData = (item, done) => {
