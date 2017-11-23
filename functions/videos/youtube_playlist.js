@@ -47,8 +47,9 @@ const getVideo = (feed, item) => {
     const author = item.author.name;
     const date = moment(item.published).format('YYYY-MM-DD-HH');
     const thumbnail = item['media:group']['media:thumbnail'].url;
-    const description = item['media:group']['media:description'];
+    // const description = item['media:group']['media:description'];
     const link = item.link.href;
+    const videoId = item['yt:videoId'];
 
     return {
         category: feed.category,
@@ -57,8 +58,9 @@ const getVideo = (feed, item) => {
         author,
         date,
         thumbnail,
-        description,
-        link
+        // description,
+        link,
+        videoId
     };
 }
 
@@ -119,4 +121,4 @@ exports.load = functions.https.onRequest((request, response) => {
     });
 });
 
-test();
+// test();
