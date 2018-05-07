@@ -49,7 +49,11 @@ const getDay = () => {
     return today.hour() > 14
     ? getToday()
     : getDayBefore(today);
-}
+};
+const getLastYear = () => {
+    const today = moment();
+    return today.subtract(1, 'years').format('YYYY-MM-DD')
+};
 
 const getFirebaseDB = () => {
     const admin = require('firebase-admin');
@@ -75,6 +79,7 @@ module.exports = {
     getLastMarketDay,
     getDayBefore,
     getDay,
+    getLastYear,
     getFirebaseDB,
     replaceAll
 };
