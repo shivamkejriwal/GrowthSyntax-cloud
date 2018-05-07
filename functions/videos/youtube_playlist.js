@@ -16,6 +16,12 @@ const headers = {
     'x-api-key': config.mercury.api_key
 }
 
+// CME Daily Market Commentary
+// https://www.youtube.com/playlist?list=PLkJQh4MWlJkvcFtOFrXkiwidJ2CyAfa1A
+// Goldman Sachs Macroeconomic Insights
+// https://www.youtube.com/playlist?list=PLIyiGQywEp66ix2-fgljBBW87iIX6C3G2
+
+
 const feeds = [
     {
         publisher: 'morningstar.com',

@@ -10,6 +10,7 @@ const config = require('../common/config.js');
 const sharadarUrl = 'https://www.quandl.com/api/v3/datatables/SHARADAR/SEP.json';
 const sharadarMetaUrl = 'http://www.sharadar.com/meta/tickers.json';
 const nasdaqUrl = 'http://www.nasdaq.com/screening/companies-by-name.aspx';
+// http://www.nasdaq.com/screening/companies-by-name.aspx?render=download // all exchanges current price
 
 const exchanges = ['nasdaq', 'nyse' , 'amex'];
 const indicators = ['ticker', 'date', 'open', 'close', 'volume'];
