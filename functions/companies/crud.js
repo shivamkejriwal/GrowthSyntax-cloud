@@ -86,8 +86,8 @@ let createBatch = (dataList) => {
     return new Promise((resolve, reject) => {
         let count = 0;
         let requestChain = [];
-        const spliceSize = dataList.length > 500 
-            ? 500 : Math.round( dataList.length * .10);
+        const spliceSize = dataList.length > 300
+            ? 300 : Math.round( dataList.length * .10);
         while(dataList.length) {
             const batch = dataList.splice(0, spliceSize);
             requestChain.push(sendBatch(batch));

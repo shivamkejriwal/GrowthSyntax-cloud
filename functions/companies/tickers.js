@@ -1,21 +1,15 @@
-const functions = require('firebase-functions');
 const _ = require('underscore');
 const crud = require('./crud');
 const analysis = require('./analysis');
 
 const util = require('../common/utils');
 const config = require('../common/config.js');
-const getTickers = require('./tickers').getTickers;
 
-// const sharadarUrl = 'https://www.quandl.com/api/v3/datatables/SHARADAR/SEP.json';
-const sharadarUrl = 'https://data.nasdaq.com/api/v3/datatables/SHARADAR/SEP';
-const indicators = ['ticker', 'date', 'open', 'close', 'volume'];
-// const tickers = ['PYPL', 'cvs'];
+const sharadarUrl = 'https://data.nasdaq.com/api/v3/datatables/SHARADAR/TICKERS.json';
+const indicators = ['ticker', 'name', 'exchange', 'isdelisted', 'sector', 'industry', 'scalemarketcap'];
 const params = {
     'api_key': config.quandl.api_key,
-    'date': util.getDay(),
-    'qopts.columns': indicators.toString(),
-    // 'ticker': tickers.toString()
+    'qopts.columns': indicators.toString()
 };
 
 const errorHandler = (err, reject) => {
@@ -23,7 +17,7 @@ const errorHandler = (err, reject) => {
     reject(err);
 };
 
-const successHandler = (result, tickers, resolve, reject) => {
+const successHandler = (result, resolve, reject) => {
     console.log('successHandler');
     if (!result) errorHandler('No Results.', reject);
     if (!result.datatable) errorHandler('No Datatable.', reject);
@@ -42,7 +36,8 @@ const successHandler = (result, tickers, resolve, reject) => {
             const value = item;
             obj[key] = value;
         });
-        if (tickers.includes(obj.ticker)) {
+        if(obj.isdelisted === 'N') {
+            // Only save non delisited companies
             resultsMap[obj.ticker] = obj;
         }
     });
@@ -51,41 +46,52 @@ const successHandler = (result, tickers, resolve, reject) => {
     resolve(results);
 }
 
-const getData = async () => {
+const getData = () => {
     console.log(`Getting prices for ${params.date}`);
-    const tickers = await getTickers();
     return new Promise(( resolve, reject) => {
         util.getData(sharadarUrl, params, (err, res, body) => {
             if (err) {
                 reject(err);
             }
-            successHandler(body, tickers, resolve, reject);
+            successHandler(body, resolve, reject);
         });
     })
 }
 
-const test = () => {
-    let count = 0;
-    getData().then(results => {
+const getTickers = () => {
+    console.log(`Getting ticker list for ${params.date}`);
+    return getData().then(results => {
         count = results.length;
-        return crud.createBatch(results);
-    }).then(result => {
-        console.log(`Updating ${count} company prices.`);
+        return results.map(ele => ele.ticker);
     }).catch(err => {
-        console.log('Error on updating prices.');
+        console.log('Error getting tickers.');
     });
 }
 
-exports.load = functions.https.onRequest((request, response) => {
-    let count = 0;
-    getData().then(results => {
-        count = results.length;
-        return crud.createBatch(results);
-    }).then(result => {
-        response.send(`Updating ${count} company prices.`);
+const getAllData = () => {
+    console.log(`Getting ticker list for ${params.date}`);
+    return getData().then(results => {
+        return results;
     }).catch(err => {
-        response.send('Error on updating prices.');
+        console.log('Error getting tickers.');
     });
-});
+}
+
+// const test = () => {
+//     let count = 0;
+//     getTickers().then(results => {
+//         count = results.length;
+//         return crud.createBatch(results);
+//     }).then(result => {
+//         console.log(`Updating ${count} company prices.`);
+//     }).catch(err => {
+//         console.log('Error getting tikcers.', err);
+//     });
+// }
+
+module.exports = {
+    getTickers,
+    getAllData
+};
 
 // test();

@@ -1,0 +1,2 @@
+export GOOGLE_APPLICATION_CREDENTIALS="firebaseServiceAccount.json"
+firebase emulators:start

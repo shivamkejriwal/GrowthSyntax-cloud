@@ -3,7 +3,7 @@ const _ = require('underscore');
 const querystring = require('querystring');
 const moment = require('moment');
 const config = require('./config.js');
-
+const firebaseServiceAccount = require('./firebaseServiceAccount.json');
 
 const round = (value, precision) => {
     const multiplier = Math.pow(10, precision);
@@ -44,8 +44,21 @@ const getLastMarketDay = () => {
 
 const getToday = () => moment().format('YYYY-MM-DD');
 const getDayBefore = (day) => day.subtract(1, 'days').format('YYYY-MM-DD');
+const getPreviousWorkday = () => {
+    let workday = moment();
+    let day = workday.day();
+    let diff = 1;  // returns yesterday
+    if (day == 0 || day == 1){  // is Sunday or Monday
+      diff = day + 2;  // returns Friday
+    }
+    return workday.subtract(diff, 'days').format('YYYY-MM-DD');
+}
 const getDay = () => {
     const today = moment();
+    const day = today.day();
+    if ([0, 1, 6].includes(day)) {
+        return getPreviousWorkday();
+    }
     return today.hour() > 14
     ? getToday()
     : getDayBefore(today);
@@ -55,9 +68,12 @@ const getLastYear = () => {
     return today.subtract(1, 'years').format('YYYY-MM-DD')
 };
 
+
 const getFirebaseDB = () => {
     const admin = require('firebase-admin');
-    const serviceAccount = config.firebase.api_key;
+    // const serviceAccount = config.firebase.api_key;
+    const serviceAccount = firebaseServiceAccount;
+    // serviceAccount.privateKey = serviceAccount.privateKey.replace(/\\n/g, '\n');
     const options = {
         credential: admin.credential.cert(serviceAccount),
         databaseURL: "https://growthsyntax.firebaseio.com"
