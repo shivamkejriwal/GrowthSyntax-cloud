@@ -1,1 +1,6 @@
-{}
+{
+  "functions": {
+    "runtime": "nodejs14",
+    "source": "functions"
+  }
+}

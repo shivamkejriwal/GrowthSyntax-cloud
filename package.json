@@ -32,5 +32,7 @@
   "devDependencies": {
     "@angular/cli": "^12.2.10"
   },
-  "engines": {}
+  "engines": {
+    "node": "^14"
+  }
 }
