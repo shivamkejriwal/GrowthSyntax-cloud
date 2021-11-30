@@ -6,8 +6,11 @@ const analysis = require('./analysis');
 
 const util = require('../common/utils');
 const config = require('../common/config.js');
+const getPriceData = require('../companies/prices.js').getPrices;
+const getProfileData = require('../companies/tickers').getAllData;
 
-const sharadarUrl = 'https://www.quandl.com/api/v3/datatables/SHARADAR/SEP.json';
+// const sharadarUrl = 'https://www.quandl.com/api/v3/datatables/SHARADAR/SEP.json';
+const sharadarUrl = 'https://data.nasdaq.com/api/v3/datatables/SHARADAR/SEP';
 const sharadarMetaUrl = 'http://www.sharadar.com/meta/tickers.json';
 const nasdaqUrl = 'http://www.nasdaq.com/screening/companies-by-name.aspx';
 // http://www.nasdaq.com/screening/companies-by-name.aspx?render=download // all exchanges current price
@@ -20,123 +23,16 @@ const params = {
     'qopts.columns': indicators.toString()
 };
 
-const errorHandler = (err, reject) => {
-    console.log('errorHandler', err);
-    reject(err);
-};
-
-const getNasdaqExchangeData = (exchange) => {
-    const profiles = {};
-    const successHandler = (body, resolve, reject) => {
-        // console.log('sectors:getNasdaqUrlData - successHandler');
-        csv.parse(body, (err, data) => {
-            _.each(data, ele => {
-                const company = {
-                    ticker: ele[0],
-                    price: ele[2],
-                    sector: ele[5],
-                    industry: ele[6]
-                }
-                profiles[company.ticker] = company;
-            }); 
-        });
-        resolve(profiles);
-    }
-    const options = {
-        exchange,
-        render: `download`
-    }
-    return new Promise((resolve, reject) => {
-        util.getData(nasdaqUrl, options, (err, res, body) => {
-            if (err) {
-                errorHandler(err, reject);
-            }
-            successHandler(body, resolve, reject);
-        });
-    })
-}
-
-const getNasdaqProfileData = () => {
-    return Promise.all([
-        getNasdaqExchangeData(exchanges[0]),
-        getNasdaqExchangeData(exchanges[1]),
-        getNasdaqExchangeData(exchanges[2])
-    ]).then(results => {
-        let profiles = {};
-        _.each(results, profile => {
-            profiles = _.extend(profiles, profile);
-        });
-        console.log(`Profiles Count: ${_.keys(profiles).length}`);
-        return profiles
+const convertToObject = (array) => {
+    const result = {};
+    _.each(array, (company) => {
+        delete company.mostTraded;
+        delete company.mostBought;
+        delete company.mostSold;
+        delete company.isdelisted;
+        result[company.ticker] = company;
     });
-}
-
-const getSharadarProfileData = () => {
-    const successHandler = (result, onComplete) => {
-        console.log('sectors:getProfileData - successHandler');
-        const data = {};
-        _.each(result, (company) => {
-            if (!company['Delisted From']) {
-                const profile = {
-                    name: company.Name,
-                    ticker: company.Ticker,
-                    location: company.Location,
-                    sector: company.Sector,
-                    industry: company.Industry
-                }
-                data[profile.ticker] = profile;
-            }
-        });
-        console.log(`Profile data found for ${_.keys(data).length} companies`);
-        onComplete(data);
-    }
-
-    return new Promise((resolve, reject) => {
-        util.getData(sharadarMetaUrl, {}, (err, res, body) => {
-            if (err) {
-                errorHandler(err, reject);
-            }
-            successHandler(body, resolve);
-        });
-    });
-}
-
-const getPriceData = () => {
-    
-    const successHandler = (result, resolve, reject) => {
-        console.log('sectors:getPriceData - successHandler');
-        if (!result) errorHandler('No Results.', reject);
-        if (!result.datatable) errorHandler('No Datatable.', reject);
-    
-        const dataList = result.datatable.data || [];
-        const columnsList = result.datatable.columns || [];
-        if (!dataList.length) errorHandler('No Data.', reject);
-    
-        console.log(`Price data found for ${dataList.length} companies`);
-    
-        const resultsMap = {};
-        _.each(dataList, (payload, listIndex) => {
-            const obj = {};
-            _.each(payload, (item, index) => {
-                const key = columnsList[index].name;
-                const value = item;
-                obj[key] = value;
-            });
-            resultsMap[obj.ticker] = obj;
-        });
-        const results = _.values(resultsMap);
-        resolve(results);
-    }
-
-    console.log(`Getting prices for ${params.date}`);
-    return new Promise((resolve, reject) => {
-        util.getData(sharadarUrl, params, (err, res, body) => {
-            if (err) {
-                errorHandler(err, reject);
-            }
-            successHandler(body, resolve, reject);
-        });
-    })
+    return result;
 }
 
 const getGroupingName = (key, profile, company) => {
@@ -182,16 +78,13 @@ const getGroupingData = (key, profile, prices) => {
     return collection;
 }
 
-const execute = (profileSource) => {
-    const getProfileData = (profileSource === 'sharadar') 
-        ? getSharadarProfileData : getNasdaqProfileData;
+const execute = () => {
     const counts = {};
-
     return Promise.all([
         getProfileData(),
         getPriceData()
     ]).then(results => {
-        const profile = results[0];
+        const profile = convertToObject(results[0]);
         const prices = results[1];
         console.log('results', {
             profile: _.keys(profile).length,
@@ -199,9 +92,9 @@ const execute = (profileSource) => {
         });
         const sectors = _.values(getGroupingData('sector', profile, prices));
         const industries = _.values(getGroupingData('industry', profile, prices));
+        console.log('[sk]sectors', sectors);
         counts.sectors = sectors.length;
         counts.industries = industries.length;
-
         return Promise.all([
             Promise.resolve(counts),
             crud.createBatch(sectors),
@@ -211,8 +104,7 @@ const execute = (profileSource) => {
 }
 
 const test = () => {
-    // execute('sharadar')
-    execute('').then(results => {
+    execute().then(results => {
         const counts = results[0];
         console.log(`Sent data for groupings (${counts.sectors}: ${counts.industries})`);
     }).catch(err => {
@@ -228,3 +120,5 @@ exports.load = functions.https.onRequest((request, response) => {
         response.send('Error on groupings');
     });
 });
+
+// test();

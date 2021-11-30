@@ -6,7 +6,8 @@ const crud = require('./crud');
 
 const util = require('../common/utils');
 const config = require('../common/config.js');
-const sharadarUrl = 'https://www.quandl.com/api/v3/datatables/SHARADAR/SEP.json';
+// const sharadarUrl = 'https://www.quandl.com/api/v3/datatables/SHARADAR/SEP.json';
+const sharadarUrl = 'https://data.nasdaq.com/api/v3/datatables/SHARADAR/SEP';
 
 const indicators = ['ticker', 'date', 'open', 'close', 'volume'];
 const params = {
@@ -80,6 +81,16 @@ const execute = () => {
     });
 }
 
+const test = () => {
+    execute()
+    .then(movers => {
+        console.log(`Advancers(${movers.advancers})-Decliners(${movers.decliners})`);
+        return crud.create(movers);
+    }).catch(err => {
+        console.log('Error on Advancers-Decliners.');
+    });
+}
+
 exports.load = functions.https.onRequest((request, response) => {
     let movers = {};
     execute('').then(result => {
@@ -91,3 +102,5 @@ exports.load = functions.https.onRequest((request, response) => {
         response.send('Error on Advancers-Decliners.');
     });
 });
+
+// test();

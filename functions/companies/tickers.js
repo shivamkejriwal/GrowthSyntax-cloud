@@ -6,7 +6,7 @@ const util = require('../common/utils');
 const config = require('../common/config.js');
 
 const sharadarUrl = 'https://data.nasdaq.com/api/v3/datatables/SHARADAR/TICKERS.json';
-const indicators = ['ticker', 'name', 'exchange', 'isdelisted', 'sector', 'industry', 'scalemarketcap'];
+const indicators = ['ticker', 'name', 'exchange', 'isdelisted', 'sector', 'industry', 'location', 'scalemarketcap'];
 const params = {
     'api_key': config.quandl.api_key,
     'qopts.columns': indicators.toString()
@@ -36,7 +36,10 @@ const successHandler = (result, resolve, reject) => {
             const value = item;
             obj[key] = value;
         });
-        if(obj.isdelisted === 'N') {
+        if(obj.sector
+            && obj.isdelisted === 'N'
+            && obj.exchange !== 'OTC'
+        ) {
             // Only save non delisited companies
             resultsMap[obj.ticker] = obj;
         }

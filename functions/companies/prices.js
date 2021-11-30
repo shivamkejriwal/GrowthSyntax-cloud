@@ -79,6 +79,8 @@ const test = () => {
     });
 }
 
+exports.getPrices = getData;
+
 exports.load = functions.https.onRequest((request, response) => {
     let count = 0;
     getData().then(results => {
