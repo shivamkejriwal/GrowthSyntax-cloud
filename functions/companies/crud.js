@@ -80,15 +80,16 @@ const sendBatch = (dataList) => {
  * Takes a list of data in the format
  * [{ticker, date, price}, {ticker, date, price}, ...]
  */
-let createBatch = (dataList) => {
+let createBatch = (dataList, spliceLimit = 300) => {
     
     console.log(`Created entities:${dataList.length}`);
     return new Promise((resolve, reject) => {
         let count = 0;
         let requestChain = [];
-        const spliceSize = dataList.length > 300
-            ? 300 : Math.round( dataList.length * .10);
-        while(dataList.length) {
+        const spliceSize = dataList.length > spliceLimit
+            ? spliceLimit : Math.round( dataList.length * .10);
+        console.log(`Using spliceSize:${spliceSize}`);
+        while(dataList.length && spliceSize > 0) {
             const batch = dataList.splice(0, spliceSize);
             requestChain.push(sendBatch(batch));
         }

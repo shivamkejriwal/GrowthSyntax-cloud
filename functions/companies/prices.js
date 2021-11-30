@@ -5,7 +5,7 @@ const analysis = require('./analysis');
 
 const util = require('../common/utils');
 const config = require('../common/config.js');
-const getTickers = require('./tickers').getTickers;
+const tickerList = require('./tickerList.json');
 
 // const sharadarUrl = 'https://www.quandl.com/api/v3/datatables/SHARADAR/SEP.json';
 const sharadarUrl = 'https://data.nasdaq.com/api/v3/datatables/SHARADAR/SEP';
@@ -18,56 +18,59 @@ const params = {
     // 'ticker': tickers.toString()
 };
 
+const getIndex = (key) => indicators.indexOf(key);
+
 const errorHandler = (err, reject) => {
     console.log('errorHandler', err);
     reject(err);
 };
 
-const successHandler = (result, tickers, resolve, reject) => {
+const successHandler = (result, resolve, reject) => {
     console.log('successHandler');
     if (!result) errorHandler('No Results.', reject);
     if (!result.datatable) errorHandler('No Datatable.', reject);
 
-    const dataList = result.datatable.data || [];
+    let dataList = result.datatable.data || [];
     const columnsList = result.datatable.columns || [];
     if (!dataList.length) errorHandler('No Data.', reject);
-
+    dataList = _.filter(dataList, ele => tickerList.includes(ele[0]))
     console.log(`datafound: ${dataList.length}`);
-
     const resultsMap = {};
-    _.each(dataList, (payload, listIndex) => {
+    _.each(dataList, (payload) => {
         const obj = {};
         _.each(payload, (item, index) => {
             const key = columnsList[index].name;
             const value = item;
             obj[key] = value;
         });
-        if (tickers.includes(obj.ticker)) {
-            resultsMap[obj.ticker] = obj;
-        }
+        resultsMap[obj.ticker] = obj;
     });
     analysis.doAnalysis(resultsMap, 10);
     const results = _.values(resultsMap);
     resolve(results);
 }
 
-const getData = async () => {
-    console.log(`Getting prices for ${params.date}`);
-    const tickers = await getTickers();
+const getData = async (date) => {
+    console.log(`Getting prices for ${date || params.date}`);
+    if (date) {
+        params.date = date;
+    }
     return new Promise(( resolve, reject) => {
         util.getData(sharadarUrl, params, (err, res, body) => {
             if (err) {
                 reject(err);
             }
-            successHandler(body, tickers, resolve, reject);
+            successHandler(body, resolve, reject);
         });
     })
 }
 
 const test = () => {
     let count = 0;
-    getData().then(results => {
+    getData()
+    .then(results => {
         count = results.length;
+        console.log(`Results found: ${count}`);
         return crud.createBatch(results);
     }).then(result => {
         console.log(`Updating ${count} company prices.`);

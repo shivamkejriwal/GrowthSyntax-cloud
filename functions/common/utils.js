@@ -56,10 +56,13 @@ const getPreviousWorkday = () => {
 const getDay = () => {
     const today = moment();
     const day = today.day();
-    if ([0, 1, 6].includes(day)) {
+    const hour = today.hour();
+    console.log(`Today is day-${day}, hour-${hour}`);
+    const lateMonday = day === 1 && hour >= 13;
+    if ([0, 1, 6].includes(day) && !lateMonday) {
         return getPreviousWorkday();
     }
-    return today.hour() > 14
+    return hour > 14
     ? getToday()
     : getDayBefore(today);
 };

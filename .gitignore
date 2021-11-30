@@ -59,5 +59,6 @@ typings/
 *.log
 
 # configuration
+functions/.DS_Store
 functions/common/config.js
 functions/common/firebaseServiceAccount.json
